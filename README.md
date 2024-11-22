@@ -9,6 +9,6 @@ Students are expected to:
 Student Info
 =========================
 
-* Student Name: Nguyen Tuan Dung
-* Student ID: 22BI13107
+* Student Name: Tran Trong Nghia
+* Student ID: 22bi13332
 * Student Group ID: Not-for-now

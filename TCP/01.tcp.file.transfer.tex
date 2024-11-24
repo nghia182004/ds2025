@@ -1,0 +1,120 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{geometry}
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage{graphicx}
+
+\geometry{margin=1in}
+
+\title{\textbf{1-1 TCP File Transfer System}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Introduction}
+
+
+This report is about the design, implementation and organization of the 1-1 File transfer over TCP system. The system consists of 2 components: server and client. The client connects and sends a text file to the server, the server reads and saves the content inside that file.
+
+\section*{Protocol Design}
+The protocol involves the following steps:
+\begin{enumerate}
+
+    \item The server listens for incoming connections.
+    \item The client establishes a TCP connection with the server.
+    \item The client reads a file and sends data to the server.
+    \item The server receives the file content and saves it locally.
+    \item Both client and server close the connection.
+\end{enumerate}
+
+\subsection*{Protocol Flow}
+The communication protocol flow is represented below:
+\begin{verbatim}
++----------+               +----------+
+|  Client  |               |  Server  |
++----------+               +----------+
+     |                           |
+     |   Connect                 |
+     |-------------------------->|
+     |                           |
+     |   Send file data          |
+     |-------------------------->|
+     |                           |
+     |   Close connection        |
+     |-------------------------->|
+     |                           |
++----------+               +----------+
+|  Close   |               |  Close   |
++----------+               +----------+
+\end{verbatim}
+
+\section*{System Organization}
+The system is organized into two main components:
+\begin{enumerate}
+    \item \textbf{Client:} Reads a file and transmitting its content to the server.
+    \item \textbf{Server:} Listens for incoming connections, receives file data, and saves it to a local file.
+\end{enumerate}
+
+\subsection*{System Architecture}
+The architecture is shown below:
+\begin{verbatim}
++--------------------+      +--------------------+
+| Client             |      | Server             |
+|--------------------|      |--------------------|
+| Socket Interface   |      | Socket Interface   |
+| File Reader        |      | File Writer        |
++--------------------+      +--------------------+
+\end{verbatim}
+
+\section*{Implementation}
+
+
+\subsection*{Client Code Snippet}
+\begin{lstlisting}[language=python]
+try:
+            with open(filename, "r") as fi:
+                data = fi.read()
+                while data:
+                    sock.send(data.encode())
+                    data = fi.read()
+            
+            print("File data sent successfully.")
+
+        except FileNotFoundError:
+            print('File not found!')
+
+\end{lstlisting}
+
+\subsection*{Server Code Snippet}
+\begin{lstlisting}[language=python]
+if data:
+           
+            filename = 'recv.txt'
+            with open(filename, "w") as fo:
+                while data:
+                    fo.write(data)
+                    data = conn.recv(1024).decode()
+            
+            print("Data written in the file successfully.")
+
+\end{lstlisting}
+
+\section*{Responsibilities}
+\begin{enumerate}
+    \item \textbf{Client:}
+    \begin{itemize}
+        \item Establishes a TCP connection to the server.
+        \item Reads the file and sends its content.
+    \end{itemize}
+    \item \textbf{Server:}
+    \begin{itemize}
+        \item Accepts incoming connections.
+        \item Receives file content and saves it locally.
+    \end{itemize}
+\end{enumerate}
+
+\end{document}

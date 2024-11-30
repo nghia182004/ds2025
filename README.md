@@ -11,4 +11,4 @@ Student Info
 
 * Student Name: Tran Trong Nghia
 * Student ID: 22bi13332
-* Student Group ID: Not-for-now
+* Student Group ID: 04

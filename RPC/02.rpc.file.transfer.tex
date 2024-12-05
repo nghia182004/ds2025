@@ -1,0 +1,125 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{geometry}
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage{graphicx}
+
+\geometry{margin=1in}
+
+\title{\textbf{1-1 RPC File Transfer System}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Introduction}
+
+This report is about the design, implementation, and organization of a File Transfer System upgraded to use Remote Procedure Call (RPC). The system enables a client to send a file to a server, where the server processes and saves the file content. XML-RPC is used to handle remote communication.
+
+\section*{Protocol Design}
+The RPC-based file transfer protocol involves the following steps:
+\begin{enumerate}
+    \item The server starts and listens for RPC calls.
+    \item The client connects to the server via XML-RPC.
+    \item The client encodes the file content in Base64 format and calls a remote function on the server to send the file.
+    \item The server decodes the received data and saves it to a local file.
+    \item Both components complete the operation without requiring a direct TCP socket connection.
+\end{enumerate}
+
+\subsection*{Protocol Flow}
+The communication protocol flow is represented below:
+\begin{verbatim}
++----------+               +----------+
+|  Client  |               |  Server  |
++----------+               +----------+
+     |                           |
+     |   RPC Call: receive_file  |
+     |-------------------------->|
+     |                           |
+     |   Send file data          |
+     |-------------------------->|
+     |                           |
++----------+                     |
+|  Close   |                     |
++----------+                     |
+\end{verbatim}
+
+\section*{System Organization}
+The system is organized into two main components:
+\begin{enumerate}
+    \item \textbf{Client:} Reads a file, encodes its content, and sends it to the server using an XML-RPC call.
+    \item \textbf{Server:} Implements an XML-RPC function to receive file data, decode it, and save it locally.
+\end{enumerate}
+
+\subsection*{System Architecture}
+The architecture is shown below:
+\begin{verbatim}
++--------------------+      +--------------------+
+| Client             |      | Server             |
+|--------------------|      |--------------------|
+| XML-RPC Interface  |      | XML-RPC Interface  |
+| File Reader        |      | File Writer        |
+| Base64 Encoder     |      | Base64 Decoder     |
++--------------------+      +--------------------+
+\end{verbatim}
+
+\section*{Implementation}
+
+\subsection*{Client Code Snippet}
+\begin{lstlisting}[language=python]
+from xmlrpc.client import ServerProxy
+import base64
+
+server_url = "http://127.0.0.1:8080"
+
+try:
+    proxy = ServerProxy(server_url)
+    filename = 'send.txt'
+
+    with open(filename, "rb") as f:
+        file_data = base64.b64encode(f.read()).decode('utf-8')
+
+    response = proxy.receive_file(file_data, 'recv.txt')
+    print(response)
+
+except Exception as e:
+    print(f"An error occurred: {e}")
+\end{lstlisting}
+
+\subsection*{Server Code Snippet}
+\begin{lstlisting}[language=python]
+from xmlrpc.server import SimpleXMLRPCServer
+import base64
+
+def receive_file(file_data, filename):
+    try:
+        with open(filename, "wb") as f:
+            f.write(base64.b64decode(file_data))
+        return f"File {filename} received successfully."
+    except Exception as e:
+        return f"Error: {e}"
+
+server = SimpleXMLRPCServer(("127.0.0.1", 8080), allow_none=True)
+server.register_function(receive_file, "receive_file")
+print("Server is running...")
+server.serve_forever()
+\end{lstlisting}
+
+\section*{Responsibilities}
+\begin{enumerate}
+    \item \textbf{Client:}
+    \begin{itemize}
+        \item Connects to the server via XML-RPC.
+        \item Reads the file, encodes it in Base64, and sends it.
+    \end{itemize}
+    \item \textbf{Server:}
+    \begin{itemize}
+        \item Accepts RPC calls and processes file transfer requests.
+        \item Decodes the file content and saves it locally.
+    \end{itemize}
+\end{enumerate}
+
+\end{document}
